@@ -60,12 +60,19 @@ export const MealProvider = ({ children }: MealProviderProps) => {
   // Function to add a meal
   const addMeal = async (meal: Meal) => {
     if (userId) {
-      const updatedMeals = [...meals, meal];
-      setMeals(updatedMeals);
-      await saveMealsToStorage(userId, updatedMeals); // Save meals to storage
+      // Check if the meal with the same id already exists
+      const mealExists = meals.some((existingMeal) => existingMeal.id === meal.id);
+
+      if (!mealExists) {
+        const updatedMeals = [...meals, meal];
+        setMeals(updatedMeals);
+        await saveMealsToStorage(userId, updatedMeals); // Save meals to storage
+      } else {
+        console.log('Meal already exists!');
+      }
     }
   };
-  
+
   // Function to remove a meal
   const removeMeal = async (id: string) => {
     if (userId) {
