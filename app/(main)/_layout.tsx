@@ -74,7 +74,7 @@ export default function MainLayout() {
             <Stack.Screen
                 name="CameraScreen"
                 component={CameraScreen}
-                options={{ title: 'Camera' }}
+                options={{ headerShown: false }}
             />
         </Stack.Navigator>
     );

@@ -5,10 +5,10 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMeals } from '../../context/mealProvider';
 import Meal from '../../models/Meal';
+import FoodCard from '../../components/foodCard';
 
 const API_KEY = process.env.EXPO_PUBLIC_EDAMAM_API_KEY!;
 const APP_ID = process.env.EXPO_PUBLIC_EDAMAM_APP_ID!;
-const AUTOCOMPLETE_URL = 'https://api.edamam.com/auto-complete';
 const FOOD_PARSER_URL = 'https://api.edamam.com/api/food-database/v2/parser';
 
 type RootStackParamList = {
@@ -22,7 +22,7 @@ export default function Add() {
     const navigation = useNavigation<NavigationProp>();
     const { addMeal } = useMeals(); 
     const [query, setQuery] = useState('');
-    const [results, setResults] = useState<string[]>([]);
+    const [results, setResults] = useState<any[]>([]);  // Update to store food objects from hints
     const [loading, setLoading] = useState(false);
 
     const fetchResults = async (searchQuery: string) => {
@@ -33,10 +33,37 @@ export default function Add() {
 
         setLoading(true);
         try {
-            const url = `${AUTOCOMPLETE_URL}?q=${searchQuery}&app_id=${APP_ID}&app_key=${API_KEY}`;
+            const url = `${FOOD_PARSER_URL}?app_id=${APP_ID}&app_key=${API_KEY}&ingr=${searchQuery}`;
             const response = await fetch(url);
             const data = await response.json();
-            setResults(data);
+
+            if (data.hints && data.hints.length > 0) {
+                // Use a Set to track foodIds and filter out duplicates
+                const seenFoodIds = new Set();
+                const uniqueResults = data.hints
+                    .map((hint: any) => hint.food)  // Extract the food object from each hint
+                    .filter((food: any) => {
+                        if (seenFoodIds.has(food.foodId)) {
+                            return false;  // Skip if foodId is already seen
+                        } else {
+                            seenFoodIds.add(food.foodId);  // Add foodId to the Set
+                            return true;  // Keep the food object
+                        }
+                    });
+
+                setResults(uniqueResults.map((food: { foodId: any; label: any; category: any; nutrients: { ENERC_KCAL: any; }; image: any; }) => {
+                    const meal: Meal = {
+                        id: food.foodId, 
+                        name: food.label, 
+                        description: `Category: ${food.category} | Calories: ${food.nutrients.ENERC_KCAL} kcal`, 
+                        image: food.image, 
+                        calories: food.nutrients.ENERC_KCAL, 
+                    };
+                    return meal;
+                }));
+            } else {
+                setResults([]);
+            }
         } catch (error) {
             console.error('Error fetching data from Edamam API', error);
         } finally {
@@ -44,31 +71,10 @@ export default function Add() {
         }
     };
 
-    const handleItemPress = async (item: string) => {
-        try {
-            const url = `${FOOD_PARSER_URL}?app_id=${APP_ID}&app_key=${API_KEY}&ingr=${item}`;
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data.hints && data.hints.length > 0) {
-                const food = data.hints[0].food; 
-                const meal: Meal = {
-                    id: food.foodId, 
-                    name: food.label, 
-                    description: `Category: ${food.category} | Calories: ${food.nutrients.ENERC_KCAL} kcal`, 
-                    image: food.image, 
-                    calories: food.nutrients.ENERC_KCAL, 
-                };
-                addMeal(meal); 
-                setQuery(''); // Clear the search bar
-                navigation.goBack(); // Go back to the previous screen (index)
-            } else {
-                Alert.alert('Error', 'No information found for the selected item.');
-            }
-        } catch (error) {
-            console.error('Error fetching food details from Edamam API', error);
-            Alert.alert('Error', 'Error fetching food details from Edamam API.');
-        }
+    const handleAddMeal = (meal: Meal) => {
+        addMeal(meal);
+        setQuery(''); 
+        navigation.goBack();
     };
 
     useEffect(() => {
@@ -94,13 +100,12 @@ export default function Add() {
             ) : (
                 <FlatList
                     data={results}
-                    keyExtractor={(item, index) => index.toString()}
+                    keyExtractor={(item) => item.foodId}
                     renderItem={({ item }) => (
-                        <TouchableOpacity onPress={() => handleItemPress(item)}>
-                            <View style={styles.resultItem}>
-                                <Text>{item}</Text>
-                            </View>
-                        </TouchableOpacity>
+                        <FoodCard
+                            meal={item}
+                            onAddMeal={() => handleAddMeal(item)}
+                        />
                     )}
                     style={styles.flatList}
                 />
@@ -117,7 +122,7 @@ const styles = StyleSheet.create({
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 8, // Reduced margin to make the list closer
+        marginBottom: 8,
     },
     searchInput: {
         flex: 1,
@@ -132,11 +137,6 @@ const styles = StyleSheet.create({
         borderRadius: 50,
     },
     flatList: {
-        marginTop: 8, // Reduced margin to make the list closer
-    },
-    resultItem: {
-        padding: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
+        marginTop: 8,
     },
 });
