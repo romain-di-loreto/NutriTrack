@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import Meal from '../models/Meal'; // Ensure the Meal model is properly defined
+import Meal from '../models/Meal';
 
 interface FoodCardProps {
     meal: Meal;
-    onAddMeal: () => void; // Callback for adding meal
+    onAddMeal: () => void;
 }
 
 const FoodCard: React.FC<FoodCardProps> = ({ meal, onAddMeal }) => {

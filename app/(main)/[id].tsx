@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Button, Image, TouchableOpacity } from 'react-native';
-import { useRoute, RouteProp } from '@react-navigation/native'; // To access the route params
-import { useMeals } from '../../context/mealProvider'; // To access the MealProvider context
+import { useRoute, RouteProp } from '@react-navigation/native'; 
+import { useMeals } from '../../context/mealProvider';
 import Meal from '../../models/Meal';
 
-// Define the type of the route params
 type RootStackParamList = {
     MealDetails: { id: string };
     add: undefined;
@@ -13,20 +12,19 @@ type RootStackParamList = {
 type MealDetailsRouteProp = RouteProp<RootStackParamList, 'MealDetails'>;
 
 export default function MealDetails() {
-    const route = useRoute<MealDetailsRouteProp>(); // Get the route params
-    const { id } = route.params; // Extract meal id
-    const { meals, removeMeal } = useMeals(); // Access meals from MealProvider
+    const route = useRoute<MealDetailsRouteProp>(); 
+    const { id } = route.params; 
+    const { meals, removeMeal } = useMeals(); 
     const [meal, setMeal] = useState<Meal | null>(null);
 
     useEffect(() => {
-        // Find the meal in the list of meals from the MealProvider using the id
         const foundMeal = meals.find(meal => meal.id === id);
         setMeal(foundMeal || null);
     }, [id, meals]);
 
     const handleRemoveMeal = () => {
         if (meal) {
-            removeMeal(meal.id); // Call the removeMeal function from MealProvider
+            removeMeal(meal.id); 
         }
     };
 
@@ -40,14 +38,12 @@ export default function MealDetails() {
 
     return (
         <View style={styles.container}>
-            {/* Meal image */}
             {meal.image && <Image source={{ uri: meal.image }} style={styles.image} />}
 
             <Text style={styles.title}>{meal.name}</Text>
             <Text style={styles.description}>{meal.description}</Text>
             <Text style={styles.calories}>Calories: {meal.calories}</Text>
 
-            {/* Remove meal button */}
             <TouchableOpacity onPress={handleRemoveMeal} style={styles.removeButton}>
                 <Text style={styles.removeButtonText}>Remove</Text>
             </TouchableOpacity>

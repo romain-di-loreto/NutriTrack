@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import Meal from '../models/Meal';
-import { useMeals } from '../context/mealProvider';// Import the MealProvider hook
+import { useMeals } from '../context/mealProvider';
 
 interface MealCardProps {
   meal: Meal;
@@ -9,15 +9,14 @@ interface MealCardProps {
 }
 
 const ProductCard: React.FC<MealCardProps> = ({ meal, onPress }) => {
-  const { removeMeal } = useMeals(); // Access removeMeal function from MealProvider
+  const { removeMeal } = useMeals(); 
 
   const handleRemoveMeal = () => {
-    removeMeal(meal.id); // Call removeMeal to delete the meal
+    removeMeal(meal.id); 
   };
 
   return (
     <View style={styles.card}>
-      {/* Display meal image, if exists */}
       {meal.image && (
         <Image source={{ uri: meal.image }} style={styles.image} />
       )}
@@ -25,12 +24,10 @@ const ProductCard: React.FC<MealCardProps> = ({ meal, onPress }) => {
       
       <Text style={styles.calories}>Calories: {meal.calories} kcal</Text>
 
-      {/* Remove button */}
       <TouchableOpacity onPress={handleRemoveMeal} style={styles.removeButton}>
         <Text style={styles.removeButtonText}>Remove</Text>
       </TouchableOpacity>
 
-      {/* Optionally, handle meal press */}
       <TouchableOpacity onPress={onPress}>
         <Text style={styles.moreInfoText}>More Info</Text>
       </TouchableOpacity>

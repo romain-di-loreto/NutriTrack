@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, ReactNode, useContext } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import { useAuth } from '@clerk/clerk-expo'; // To get the userId
-import Meal from '../models/Meal'; // Assuming you already have a Meal model
+import { useAuth } from '@clerk/clerk-expo';
+import Meal from '../models/Meal'; 
 
 interface MealContextType {
   meals: Meal[];
@@ -20,7 +20,6 @@ export const MealProvider = ({ children }: MealProviderProps) => {
   const { userId } = useAuth();
   const [meals, setMeals] = useState<Meal[]>([]);
 
-  // Helper function to fetch meals from local storage
   const fetchMealsFromStorage = async (userId: string) => {
     try {
       const storedMeals = await SecureStore.getItemAsync(`meals_${userId}`);
@@ -34,14 +33,12 @@ export const MealProvider = ({ children }: MealProviderProps) => {
     }
   };
 
-  // Fetch meals on mount if userId is available
   useEffect(() => {
     if (userId) {
       fetchMeals();
     }
   }, [userId]);
 
-  // Function to get meals
   const fetchMeals = async () => {
     if (userId) {
       const meals = await fetchMealsFromStorage(userId);
@@ -57,28 +54,25 @@ export const MealProvider = ({ children }: MealProviderProps) => {
     }
   };
 
-  // Function to add a meal
   const addMeal = async (meal: Meal) => {
     if (userId) {
-      // Check if the meal with the same id already exists
       const mealExists = meals.some((existingMeal) => existingMeal.id === meal.id);
 
       if (!mealExists) {
         const updatedMeals = [...meals, meal];
         setMeals(updatedMeals);
-        await saveMealsToStorage(userId, updatedMeals); // Save meals to storage
+        await saveMealsToStorage(userId, updatedMeals);
       } else {
         console.log('Meal already exists!');
       }
     }
   };
 
-  // Function to remove a meal
   const removeMeal = async (id: string) => {
     if (userId) {
       const updatedMeals = meals.filter((meal) => meal.id !== id);
       setMeals(updatedMeals);
-      await saveMealsToStorage(userId, updatedMeals); // Save meals to storage
+      await saveMealsToStorage(userId, updatedMeals);
     }
   };
 
@@ -89,7 +83,6 @@ export const MealProvider = ({ children }: MealProviderProps) => {
   );
 };
 
-// Custom hook to use MealContext
 export const useMeals = () => {
   const context = useContext(MealContext);
   if (!context) {

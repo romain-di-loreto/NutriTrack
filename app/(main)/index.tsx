@@ -4,7 +4,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import ProductCard from '../../components/mealCard';
-import { useMeals } from '../../context/mealProvider'; // Import useMeals
+import { useMeals } from '../../context/mealProvider'; 
 
 type RootStackParamList = {
     MealDetails: { id: string };
@@ -15,10 +15,10 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function MealList() {
     const navigation = useNavigation<NavigationProp>();
-    const { meals, fetchMeals } = useMeals(); // Access meals and fetchMeals from context
+    const { meals, fetchMeals } = useMeals(); 
 
     useEffect(() => {
-        fetchMeals(); // Fetch meals when the component mounts
+        fetchMeals();
     }, [fetchMeals]);
 
     React.useLayoutEffect(() => {

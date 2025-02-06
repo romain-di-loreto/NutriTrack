@@ -22,7 +22,7 @@ export default function Add() {
     const navigation = useNavigation<NavigationProp>();
     const { addMeal } = useMeals(); 
     const [query, setQuery] = useState('');
-    const [results, setResults] = useState<any[]>([]);  // Update to store food objects from hints
+    const [results, setResults] = useState<any[]>([]); 
     const [loading, setLoading] = useState(false);
 
     const fetchResults = async (searchQuery: string) => {
@@ -38,16 +38,15 @@ export default function Add() {
             const data = await response.json();
 
             if (data.hints && data.hints.length > 0) {
-                // Use a Set to track foodIds and filter out duplicates
                 const seenFoodIds = new Set();
                 const uniqueResults = data.hints
-                    .map((hint: any) => hint.food)  // Extract the food object from each hint
+                    .map((hint: any) => hint.food)  
                     .filter((food: any) => {
                         if (seenFoodIds.has(food.foodId)) {
-                            return false;  // Skip if foodId is already seen
+                            return false; 
                         } else {
-                            seenFoodIds.add(food.foodId);  // Add foodId to the Set
-                            return true;  // Keep the food object
+                            seenFoodIds.add(food.foodId);  
+                            return true;
                         }
                     });
 
