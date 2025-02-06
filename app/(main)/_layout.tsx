@@ -32,6 +32,7 @@ function MainTabs() {
                     tabBarIcon: ({ color, size }) => (
                         <MaterialIcons name="food-bank" size={24} color="black" />
                     ),
+                    headerTitle: "Meals"
                 }}
             />
             <Tab.Screen
@@ -42,6 +43,7 @@ function MainTabs() {
                     tabBarIcon: ({ color, size }) => (
                         <Ionicons name="add-circle-outline" size={size} color={color} />
                     ),
+                    headerTitle: "Add a Meal"
                 }}
             />
             <Tab.Screen
@@ -52,6 +54,7 @@ function MainTabs() {
                     tabBarIcon: ({ color, size }) => (
                         <Ionicons name="person" size={size} color={color} />
                     ),
+                    headerTitle: "Your profile"
                 }}
             />
         </Tab.Navigator>

@@ -1,100 +1,107 @@
-import * as React from 'react'
-import { Text, TextInput, Button, View } from 'react-native'
-import { useSignUp } from '@clerk/clerk-expo'
-import { useRouter } from 'expo-router'
+import * as React from 'react';
+import { Text, TextInput, Button, View, StyleSheet } from 'react-native';
+import { useSignUp } from '@clerk/clerk-expo';
+import { useRouter, Stack } from 'expo-router';
 
 export default function SignUpScreen() {
-    const { isLoaded, signUp, setActive } = useSignUp()
-    const router = useRouter()
+    const { isLoaded, signUp, setActive } = useSignUp();
+    const router = useRouter();
 
-    const [emailAddress, setEmailAddress] = React.useState('')
-    const [password, setPassword] = React.useState('')
-    const [pendingVerification, setPendingVerification] = React.useState(false)
-    const [code, setCode] = React.useState('')
+    const [emailAddress, setEmailAddress] = React.useState('');
+    const [password, setPassword] = React.useState('');
+    const [pendingVerification, setPendingVerification] = React.useState(false);
+    const [code, setCode] = React.useState('');
 
-    // Handle submission of sign-up form
     const onSignUpPress = async () => {
-        if (!isLoaded) return
+        if (!isLoaded) return;
 
-        // Start sign-up process using email and password provided
         try {
-            await signUp.create({
-                emailAddress,
-                password,
-            })
-
-            // Send user an email with verification code
-            await signUp.prepareEmailAddressVerification({ strategy: 'email_code' })
-
-            // Set 'pendingVerification' to true to display second form
-            // and capture OTP code
-            setPendingVerification(true)
+            await signUp.create({ emailAddress, password });
+            await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
+            setPendingVerification(true);
         } catch (err) {
-            // See https://clerk.com/docs/custom-flows/error-handling
-            // for more info on error handling
-            console.error(JSON.stringify(err, null, 2))
+            console.error(JSON.stringify(err, null, 2));
         }
-    }
+    };
 
-    // Handle submission of verification form
     const onVerifyPress = async () => {
-        if (!isLoaded) return
+        if (!isLoaded) return;
 
         try {
-            // Use the code the user provided to attempt verification
-            const signUpAttempt = await signUp.attemptEmailAddressVerification({
-                code,
-            })
+            const signUpAttempt = await signUp.attemptEmailAddressVerification({ code });
 
-            // If verification was completed, set the session to active
-            // and redirect the user
             if (signUpAttempt.status === 'complete') {
-                await setActive({ session: signUpAttempt.createdSessionId })
-                router.replace('/')
+                await setActive({ session: signUpAttempt.createdSessionId });
+                router.replace('/');
             } else {
-                // If the status is not complete, check why. User may need to
-                // complete further steps.
-                console.error(JSON.stringify(signUpAttempt, null, 2))
+                console.error(JSON.stringify(signUpAttempt, null, 2));
             }
         } catch (err) {
-            // See https://clerk.com/docs/custom-flows/error-handling
-            // for more info on error handling
-            console.error(JSON.stringify(err, null, 2))
+            console.error(JSON.stringify(err, null, 2));
         }
-    }
-
-    if (pendingVerification) {
-        return (
-            <>
-                <Text>Verify your email</Text>
-                <TextInput
-                    value={code}
-                    placeholder="Enter your verification code"
-                    onChangeText={(code) => setCode(code)}
-                />
-                <Button title="Verify" onPress={onVerifyPress} />
-            </>
-        )
-    }
+    };
 
     return (
-        <View>
-            <>
-                <Text>Sign up</Text>
-                <TextInput
-                    autoCapitalize="none"
-                    value={emailAddress}
-                    placeholder="Enter email"
-                    onChangeText={(email) => setEmailAddress(email)}
-                />
-                <TextInput
-                    value={password}
-                    placeholder="Enter password"
-                    secureTextEntry={true}
-                    onChangeText={(password) => setPassword(password)}
-                />
-                <Button title="Continue" onPress={onSignUpPress} />
-            </>
+        <View style={styles.container}>
+            <Stack.Screen options={{ title: 'Sign Up' }} />
+            {pendingVerification ? (
+                <>
+                    <Text style={styles.title}>Verify Your Email</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={code}
+                        placeholder="Enter verification code"
+                        onChangeText={setCode}
+                        keyboardType="numeric"
+                    />
+                    <Button title="Verify" onPress={onVerifyPress} color="#007AFF" />
+                </>
+            ) : (
+                <>
+                    <Text style={styles.title}>Create an Account</Text>
+                    <TextInput
+                        style={styles.input}
+                        autoCapitalize="none"
+                        value={emailAddress}
+                        placeholder="Enter email"
+                        onChangeText={setEmailAddress}
+                        keyboardType="email-address"
+                    />
+                    <TextInput
+                        style={styles.input}
+                        value={password}
+                        placeholder="Enter password"
+                        secureTextEntry={true}
+                        onChangeText={setPassword}
+                    />
+                    <Button title="Continue" onPress={onSignUpPress} color="#007AFF" />
+                </>
+            )}
         </View>
-    )
+    );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+        backgroundColor: '#F9F9F9',
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 20,
+        color: '#333',
+    },
+    input: {
+        width: '100%',
+        padding: 10,
+        marginBottom: 15,
+        borderWidth: 1,
+        borderColor: '#CCC',
+        borderRadius: 8,
+        backgroundColor: '#FFF',
+    },
+});
